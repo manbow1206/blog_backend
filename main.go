@@ -1,23 +1,24 @@
 package main
 
 import (
-	"net/http"
+	"backend/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	engine := gin.Default()
-	ua := ""
-	engine.Use(func(c *gin.Context) {
-		ua = c.GetHeader("User-Agent")
-		c.Next()
-	})
-	engine.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "hello world",
-			"User-Agent": ua,
-		})
-	})
+	engine.Use(middleware.RecordUaAndTime)
+
+	blogEngine := engine.Group("/article")
+	{
+		v1 := blogEngine.Group("/v1")
+		{
+			v1.POST("/add", controller.BlogAdd)
+			// v1.GET("/list", controller.BlogList)
+			// v1.PUT("/list", controller.BlogUpdate)
+			// v1.DELETE("/delete", controller.BlogDelete)
+		}
+	}
 	engine.Run(":23000")
 }
